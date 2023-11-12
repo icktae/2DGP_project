@@ -2,16 +2,15 @@ from pico2d import *
 
 class Grass:
     def __init__(self):
-        self.image = load_image('grass.png')
+        self.image = load_image('field_test.png')
 
     def update(self):
         pass
 
     def draw(self):
-        self.image.draw(400, 30)
-        self.image.draw(1200, 30)
+        self.image.draw(850, 350)
+
 
     def get_bb(self):
         return 0, 0, 1600 - 1, 50
-
 
