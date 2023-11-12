@@ -2,6 +2,8 @@
 
 from pico2d import get_time, load_image, load_font, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT, \
     draw_rectangle
+from sdl2 import SDLK_UP, SDLK_DOWN
+
 from ball import Ball
 import game_world
 import game_framework
@@ -23,6 +25,19 @@ def left_down(e):
 
 def left_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_LEFT
+
+def up_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_UP
+
+def up_up(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_UP
+
+def down_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_DOWN
+
+def down_up(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_DOWN
+
 
 def space_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
@@ -66,8 +81,9 @@ class Idle:
         elif boy.face_dir == 1:
             boy.action = 3
         boy.dir = 0
+        boy.dir_y = 0
         boy.frame = 0
-        boy.wait_time = get_time() # pico2d import 필요
+        boy.wait_time = get_time()
         pass
 
     @staticmethod
@@ -92,10 +108,15 @@ class Run:
 
     @staticmethod
     def enter(boy, e):
-        if right_down(e) or left_up(e): # 오른쪽으로 RUN
+        boy.dir_y = 0
+        if right_down(e) or left_up(e):  # 오른쪽으로 RUN
             boy.dir, boy.action, boy.face_dir = 1, 1, 1
-        elif left_down(e) or right_up(e): # 왼쪽으로 RUN
+        elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
             boy.dir, boy.action, boy.face_dir = -1, 0, -1
+        elif up_down(e):  # 위쪽으로 RUN
+            boy.dir_y, boy.action, boy.face_dir = 1, 0, 1
+        elif down_down(e):  # 아래쪽으로 RUN
+            boy.dir_y, boy.action, boy.face_dir = -1, 1, -1
 
     @staticmethod
     def exit(boy, e):
@@ -106,11 +127,11 @@ class Run:
 
     @staticmethod
     def do(boy):
-        # boy.frame = (boy.frame + 1) % 8
-        boy.x += boy.dir * RUN_SPEED_PPS * game_framework.frame_time
-        boy.x = clamp(25, boy.x, 1600-25)
+        boy.x += (boy.dir * RUN_SPEED_PPS + boy.dir_y * RUN_SPEED_PPS) * game_framework.frame_time
+        boy.y += boy.dir_y * RUN_SPEED_PPS * game_framework.frame_time
+        boy.x = clamp(25, boy.x, 1600 - 25)
+        boy.y = clamp(25, boy.y, 1200 - 25)
         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
-
 
     @staticmethod
     def draw(boy):
@@ -118,40 +139,14 @@ class Run:
 
 
 
-class Sleep:
-
-    @staticmethod
-    def enter(boy, e):
-        boy.frame = 0
-        pass
-
-    @staticmethod
-    def exit(boy, e):
-        pass
-
-    @staticmethod
-    def do(boy):
-        boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
-
-
-    @staticmethod
-    def draw(boy):
-        if boy.face_dir == -1:
-            boy.image.clip_composite_draw(int(boy.frame) * 100, 200, 100, 100,
-                                          -3.141592 / 2, '', boy.x + 25, boy.y - 25, 100, 100)
-        else:
-            boy.image.clip_composite_draw(int(boy.frame) * 100, 300, 100, 100,
-                                          3.141592 / 2, '', boy.x - 25, boy.y - 25, 100, 100)
-
 
 class StateMachine:
     def __init__(self, boy):
         self.boy = boy
         self.cur_state = Idle
         self.transitions = {
-            Idle: {right_down: Run, left_down: Run, left_up: Run, right_up: Run, time_out: Sleep, space_down: Idle},
-            Run: {right_down: Idle, left_down: Idle, right_up: Idle, left_up: Idle, space_down: Run},
-            Sleep: {right_down: Run, left_down: Run, right_up: Run, left_up: Run}
+            Idle: {right_down: Run, left_down: Run, up_down: Run, down_down: Run, left_up: Run, right_up: Run, up_up: Run, down_up: Run, space_down: Idle},
+            Run: {right_down: Idle, left_down: Idle, up_down:Idle, down_down:Idle, right_up: Idle, left_up: Idle, up_up:Idle, down_up:Idle, space_down: Run},
         }
 
     def start(self):
@@ -179,12 +174,12 @@ class StateMachine:
 
 class Boy:
     def __init__(self):
-        self.x, self.y = 50, 90
+        self.x, self.y = 600, 350
         self.frame = 0
         self.action = 3
         self.face_dir = 1
         self.dir = 0
-        self.image = load_image('animation_sheet.png')
+        self.image = load_image('sonic_animation.png')
         self.font = load_font('ENCR10B.TTF', 16)
         self.state_machine = StateMachine(self)
         self.state_machine.start()
@@ -206,7 +201,7 @@ class Boy:
 
     def draw(self):
         self.state_machine.draw()
-        self.font.draw(self.x-10, self.y + 50, f'touchdown', (255, 255, 0))
+        self.font.draw(self.x-10, self.y + 50, f'{self.ball_count:02d}', (255, 255, 0))
         draw_rectangle(*self.get_bb())
 
     # fill here
@@ -220,4 +215,3 @@ class Boy:
 
         if group == 'boy:zombie' :
             game_framework.quit()
-
