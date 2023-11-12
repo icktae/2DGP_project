@@ -1,6 +1,6 @@
 from pico2d import get_time, load_image, load_font, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT, \
     draw_rectangle
-from sdl2 import SDLK_UP, SDLK_DOWN
+from sdl2 import SDLK_UP, SDLK_DOWN, SDLK_q, SDLK_w
 
 from ball import Ball
 import game_world
@@ -37,6 +37,23 @@ def down_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_DOWN
 
 
+def q_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_q
+
+
+def q_up(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_q
+
+
+def w_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_w
+
+
+def w_up(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_w
+
+
+
 def space_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_SPACE
 
@@ -61,6 +78,7 @@ class Idle:
 
     @staticmethod
     def enter(boy, e):
+        print("stay")
         if boy.face_dir == -1:
             boy.action = 2
         elif boy.face_dir == 1:
@@ -88,6 +106,7 @@ class Idle:
 class Run:
     @staticmethod
     def enter(boy, e):
+        print("run")
         boy.dir_y = 0
         if right_down(e) or right_up(e):  # 오른쪽으로 RUN
             boy.dir, boy.action, boy.face_dir = 1, 1, 1
@@ -97,7 +116,6 @@ class Run:
             boy.dir_y, boy.action, boy.face_dir = 1, 1, boy.face_dir
         elif down_down(e):  # 아래쪽으로 RUN
             boy.dir_y, boy.action, boy.face_dir = -1, 1, boy.face_dir
-
 
     @staticmethod
     def exit(boy, e):
@@ -134,15 +152,92 @@ class Run:
     def draw(boy):
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
 
+
+class Speedup:
+    @staticmethod
+    def enter(boy, e):
+        print("speed up")
+        boy.speedup_time = get_time() + 0.4
+
+    @staticmethod
+    def exit(boy, e):
+        pass
+
+    @staticmethod
+    def do(boy):
+        speed_multiplier = 2
+
+        boy.x += boy.dir * RUN_SPEED_PPS * speed_multiplier * game_framework.frame_time
+        boy.y += boy.dir_y * RUN_SPEED_PPS * speed_multiplier * game_framework.frame_time
+        boy.x = clamp(25, boy.x, 1700)
+        boy.y = clamp(125, boy.y, 625)
+        boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
+
+        if boy.dir == -1:
+            boy.action = 0
+
+        # boy.x -> over  game clear
+        if boy.x >= 1600:
+            game_framework.quit()
+
+        # boy.y -> under 25, over 625 game over
+        if boy.y <= 125 or boy.y >= 625:
+            game_framework.quit()
+
+        if get_time() >= boy.speedup_time :
+            boy.state_machine.handle_event(('TIME_OUT', 0))
+
+    @staticmethod
+    def draw(boy):
+        boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
+
+
+
+class Backstep:
+    @staticmethod
+    def enter(boy, e):
+        print("backstep")
+        boy.speedup_time = get_time() + 0.04
+
+
+    @staticmethod
+    def exit(boy, e):
+        pass
+
+    @staticmethod
+    def do(boy):
+        speed_multiplier = 10
+
+        boy.x -= boy.dir * RUN_SPEED_PPS * speed_multiplier * game_framework.frame_time
+
+        boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
+
+
+        if get_time() >= boy.speedup_time:
+            boy.state_machine.handle_event(('TIME_OUT', 0))
+
+    @staticmethod
+    def draw(boy):
+        boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
+
+
+class Dash :
+    pass
+
+
 class StateMachine:
     def __init__(self, boy):
         self.boy = boy
         self.cur_state = Idle
         self.transitions = {
-            Idle: {right_down: Run, left_down: Run, up_down: Run, down_down: Run,
-                   left_up: Idle, right_up: Idle, up_up: Idle, down_up: Idle, space_down: Idle},
-            Run: {right_down: Run, left_down: Run, up_down: Run, down_down: Run,
-                  right_up: Idle, left_up: Idle, up_up: Idle, down_up: Idle, space_down: Run},
+            Idle: {right_down: Run, left_down: Run, up_down: Run, down_down: Run, q_down: Speedup, w_down: Backstep,
+                   left_up: Idle, right_up: Idle, up_up: Idle, down_up: Idle, space_down: Idle, q_up : Speedup, time_out : Run},
+            Run: {right_down: Run, left_down: Run, up_down: Run, down_down: Run, q_down: Speedup, w_down: Backstep,
+                  right_up: Idle, left_up: Idle, up_up: Idle, down_up: Idle, space_down: Run, q_up: Speedup, time_out : Run},
+            Speedup: {right_down: Run, left_down: Run, up_down: Run, down_down: Run, w_down: Backstep,
+                   right_up: Idle, left_up: Idle, up_up: Idle, down_up: Idle, space_down: Idle, time_out : Run},
+            Backstep: {right_down: Run, left_down: Run, up_down: Run, down_down: Run,
+                   right_up: Idle, left_up: Idle, up_up: Idle, down_up: Idle, space_down: Idle, time_out : Run}
         }
 
     def start(self):
