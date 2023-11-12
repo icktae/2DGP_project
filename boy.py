@@ -1,4 +1,4 @@
-# 이것은 각 상태들을 객체로 구현한 것임.
+# 이 코드는 각 상태들을 객체로 구현한 것임.
 
 from pico2d import get_time, load_image, load_font, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT, \
     draw_rectangle
@@ -47,9 +47,6 @@ def time_out(e):
 
 # time_out = lambda e : e[0] == 'TIME_OUT'
 
-
-
-
 # Boy Run Speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 RUN_SPEED_KMPH = 20.0  # Km / Hour
@@ -61,16 +58,6 @@ RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 TIME_PER_ACTION = 0.5
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 8
-
-
-
-
-
-
-
-
-
-
 
 class Idle:
 
@@ -102,21 +89,25 @@ class Idle:
     def draw(boy):
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
 
-
-
 class Run:
 
     @staticmethod
     def enter(boy, e):
-        boy.dir_y = 0
-        if right_down(e) or left_up(e):  # 오른쪽으로 RUN
+        if right_down(e) or right_up(e):  # 오른쪽으로 RUN
             boy.dir, boy.action, boy.face_dir = 1, 1, 1
-        elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
+        elif left_down(e) or left_up(e):  # 왼쪽으로 RUN
             boy.dir, boy.action, boy.face_dir = -1, 0, -1
         elif up_down(e):  # 위쪽으로 RUN
-            boy.dir_y, boy.action, boy.face_dir = 1, 0, 1
+            if  boy.dir == 1 :
+                boy.dir_y, boy.action, boy.face_dir = 1, 1, 1
+            elif boy.dir == -1 :
+                boy.dir_y, boy.action, boy.face_dir = 1, 0, 1
+
         elif down_down(e):  # 아래쪽으로 RUN
-            boy.dir_y, boy.action, boy.face_dir = -1, 1, -1
+            if boy.dir == 1:
+                boy.dir_y, boy.action, boy.face_dir = -1, 1, -1
+            elif boy.dir == -1:
+                boy.dir_y, boy.action, boy.face_dir = -1, 0, -1
 
     @staticmethod
     def exit(boy, e):
@@ -127,7 +118,7 @@ class Run:
 
     @staticmethod
     def do(boy):
-        boy.x += (boy.dir * RUN_SPEED_PPS + boy.dir_y * RUN_SPEED_PPS) * game_framework.frame_time
+        boy.x += boy.dir * RUN_SPEED_PPS * game_framework.frame_time
         boy.y += boy.dir_y * RUN_SPEED_PPS * game_framework.frame_time
         boy.x = clamp(25, boy.x, 1600 - 25)
         boy.y = clamp(25, boy.y, 1200 - 25)
@@ -137,16 +128,15 @@ class Run:
     def draw(boy):
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
 
-
-
-
 class StateMachine:
     def __init__(self, boy):
         self.boy = boy
         self.cur_state = Idle
         self.transitions = {
-            Idle: {right_down: Run, left_down: Run, up_down: Run, down_down: Run, left_up: Run, right_up: Run, up_up: Run, down_up: Run, space_down: Idle},
-            Run: {right_down: Idle, left_down: Idle, up_down:Idle, down_down:Idle, right_up: Idle, left_up: Idle, up_up:Idle, down_up:Idle, space_down: Run},
+            Idle: {right_down: Run, left_down: Run, up_down: Run, down_down: Run,
+                   left_up: Idle, right_up: Idle, up_up: Idle, down_up: Idle, space_down: Idle},
+            Run: {right_down: Run, left_down: Run, up_down: Run, down_down: Run,
+                  right_up: Idle, left_up: Idle, up_up: Idle, down_up: Idle, space_down: Run},
         }
 
     def start(self):
@@ -168,10 +158,6 @@ class StateMachine:
     def draw(self):
         self.cur_state.draw(self.boy)
 
-
-
-
-
 class Boy:
     def __init__(self):
         self.x, self.y = 600, 350
@@ -179,19 +165,12 @@ class Boy:
         self.action = 3
         self.face_dir = 1
         self.dir = 0
+        self.dir_y = 0
         self.image = load_image('sonic_animation.png')
         self.font = load_font('ENCR10B.TTF', 16)
         self.state_machine = StateMachine(self)
         self.state_machine.start()
         self.ball_count = 10
-
-
-    def fire_ball(self):
-        if self.ball_count > 0:
-            self.ball_count -= 1
-            ball = Ball(self.x, self.y, self.face_dir*10)
-            game_world.add_object(ball) #보이는 월드 삽입
-            game_world.add_collision_pair('zombie:ball', None, ball)
 
     def update(self):
         self.state_machine.update()
@@ -201,17 +180,16 @@ class Boy:
 
     def draw(self):
         self.state_machine.draw()
-        self.font.draw(self.x-10, self.y + 50, f'{self.ball_count:02d}', (255, 255, 0))
+        self.font.draw(self.x - 10, self.y + 50, f'{self.ball_count:02d}', (255, 255, 0))
         draw_rectangle(*self.get_bb())
 
     # fill here
     def get_bb(self):
         return self.x - 20, self.y - 50, self.x + 20, self.y + 50
 
-
     def handle_collision(self, group, other):
         if group == 'boy:ball':
             self.ball_count += 1
 
-        if group == 'boy:zombie' :
+        if group == 'boy:zombie':
             game_framework.quit()
