@@ -90,24 +90,17 @@ class Idle:
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
 
 class Run:
-
     @staticmethod
     def enter(boy, e):
+        boy.dir_y = 0
         if right_down(e) or right_up(e):  # 오른쪽으로 RUN
             boy.dir, boy.action, boy.face_dir = 1, 1, 1
         elif left_down(e) or left_up(e):  # 왼쪽으로 RUN
             boy.dir, boy.action, boy.face_dir = -1, 0, -1
         elif up_down(e):  # 위쪽으로 RUN
-            if  boy.dir == 1 :
-                boy.dir_y, boy.action, boy.face_dir = 1, 1, 1
-            elif boy.dir == -1 :
-                boy.dir_y, boy.action, boy.face_dir = 1, 0, 1
-
+            boy.dir_y, boy.action, boy.face_dir = 1, 1, 1
         elif down_down(e):  # 아래쪽으로 RUN
-            if boy.dir == 1:
-                boy.dir_y, boy.action, boy.face_dir = -1, 1, -1
-            elif boy.dir == -1:
-                boy.dir_y, boy.action, boy.face_dir = -1, 0, -1
+            boy.dir_y, boy.action, boy.face_dir = -1, 1, -1
 
     @staticmethod
     def exit(boy, e):
@@ -124,6 +117,14 @@ class Run:
         boy.y = clamp(25, boy.y, 1200 - 25)
         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
 
+        if boy.dir == 1:
+            boy.action = 1
+        elif boy.dir == -1:
+            boy.action = 0
+        elif boy.dir_y == 1:
+            boy.action = 1
+        elif boy.dir_y == -1:
+            boy.action = 1
     @staticmethod
     def draw(boy):
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
