@@ -150,6 +150,7 @@ class Run:
         # boy.y -> under 25, over 625 game over
         if boy.y <= 125 or boy.y >= 625:
             print('Game Over')
+            game_framework.quit()
 
 
 
