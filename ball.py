@@ -1,7 +1,7 @@
 from pico2d import *
 import game_world
 import game_framework
-from zombie import Zombie
+from enemy import Enemy
 
 
 class Ball:
@@ -30,5 +30,5 @@ class Ball:
         if group == 'boy:ball':
             game_world.remove_object(self)
 
-        if group == 'zombie:ball':
+        if group == 'enemy:ball':
             game_world.remove_object(self)

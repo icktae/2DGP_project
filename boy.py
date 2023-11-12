@@ -313,11 +313,11 @@ class Boy:
 
     # fill here
     def get_bb(self):
-        return self.x - 20, self.y - 50, self.x + 20, self.y + 50
+        return self.x - 20, self.y - 40, self.x + 20, self.y + 30
 
     def handle_collision(self, group, other):
         if group == 'boy:ball':
             self.ball_count += 1
 
-        if group == 'boy:zombie':
+        if group == 'boy:enemy':
             game_framework.quit()
