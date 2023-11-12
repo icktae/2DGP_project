@@ -1,10 +1,10 @@
-from pico2d import get_time, load_image, load_font, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT, \
-    draw_rectangle
+from pico2d import *
 from sdl2 import SDLK_UP, SDLK_DOWN, SDLK_q, SDLK_w
 
 from ball import Ball
 import game_world
 import game_framework
+
 
 # state event check
 # ( state event type, event value )
@@ -103,7 +103,16 @@ class Idle:
     def draw(boy):
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
 
+
+def draw_touch_down_text():
+    pass
+
+
 class Run:
+
+    def __init__(self):
+        self.font = load_font('ENCR10B.TTF', 128)
+
     @staticmethod
     def enter(boy, e):
         print("run")
@@ -140,13 +149,14 @@ class Run:
 
         # boy.x -> over  game clear
         if boy.x >= 1600 :
-            game_framework.quit()
+            print("Touch Down")
+
 
         # boy.y -> under 25, over 625 game over
         if boy.y <= 125 or boy.y >= 625:
-            game_framework.quit()
+            print('Game Over')
 
-        #
+
 
     @staticmethod
     def draw(boy):
@@ -177,12 +187,13 @@ class Speedup:
             boy.action = 0
 
         # boy.x -> over  game clear
-        if boy.x >= 1600:
-            game_framework.quit()
+        if boy.x >= 1600 :
+            print("Touch Down")
+
 
         # boy.y -> under 25, over 625 game over
         if boy.y <= 125 or boy.y >= 625:
-            game_framework.quit()
+            print('Game Over')
 
         if get_time() >= boy.speedup_time :
             boy.state_machine.handle_event(('TIME_OUT', 0))
@@ -221,6 +232,10 @@ class Backstep:
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
 
 
+
+
+
+
 class Dash :
     pass
 
@@ -246,6 +261,7 @@ class StateMachine:
     def update(self):
         self.cur_state.do(self.boy)
 
+
     def handle_event(self, e):
         for check_event, next_state in self.transitions[self.cur_state].items():
             if check_event(e):
@@ -268,10 +284,10 @@ class Boy:
         self.dir = 0
         self.dir_y = 0
         self.image = load_image('sonic_animation.png')
-        self.font = load_font('ENCR10B.TTF', 16)
+        self.font = load_font('ENCR10B.TTF', 128)
         self.state_machine = StateMachine(self)
         self.state_machine.start()
-        # self.ball_count = 10
+        self.ball_count = 10
 
     def update(self):
         self.state_machine.update()
@@ -281,8 +297,18 @@ class Boy:
 
     def draw(self):
         self.state_machine.draw()
-        # self.font.draw(self.x - 10, self.y + 50, f'{self.ball_count:02d}', (255, 255, 0))
         draw_rectangle(*self.get_bb())
+
+    def clear_draw(self):
+        if self.x >= 1600:
+            self.font.draw(500, 350, 'TouchDown!', (255, 255, 255))
+            draw_rectangle(*self.get_bb())
+
+    def over_draw(self):
+        if self.y <= 125 or self.y >= 625:
+            self.font.draw(500, 350, 'GameOver', (255, 255, 255))
+            draw_rectangle(*self.get_bb())
+
 
     # fill here
     def get_bb(self):

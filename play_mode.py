@@ -6,6 +6,7 @@ import game_framework
 import game_world
 from grass import Grass
 from boy import Boy
+from clear import Clear
 from ball import Ball
 from zombie import Zombie
 
@@ -35,12 +36,12 @@ def init():
     boy = Boy()
     game_world.add_object(boy, 1)
 
-    #zombies = [Zombie() for _ in range(5)]
-    #game_world.add_objects(zombies, 1)
-    #game_world.add_collision_pair('boy:zombie', boy, None)
-    #for zombie in zombies:
-     #   game_world.add_collision_pair('boy:zombie', None, zombie)
-      #  game_world.add_collision_pair('zombie:ball', zombie, None)
+    zombies = [Zombie() for _ in range(10)]
+    game_world.add_objects(zombies, 1)
+    game_world.add_collision_pair('boy:zombie', boy, None)
+    for zombie in zombies:
+       game_world.add_collision_pair('boy:zombie', None, zombie)
+       game_world.add_collision_pair('zombie:ball', zombie, None)
 
     # fill here
     # global balls
