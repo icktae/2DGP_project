@@ -282,6 +282,7 @@ class Boy:
         self.action = 3
         self.face_dir = 1
         self.dir = 0
+        self.size = 75
         self.dir_y = 0
         self.image = load_image('sonic_animation.png')
         self.font = load_font('ENCR10B.TTF', 128)

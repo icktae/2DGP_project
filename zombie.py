@@ -1,9 +1,8 @@
 import random
-import math
 import game_framework
-import game_world
 from pico2d import *
 
+import game_world
 
 # zombie Run Speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
@@ -13,32 +12,26 @@ RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
 
 # zombie Action Speed
-TIME_PER_ACTION = 0.5
+TIME_PER_ACTION = 1
 ACTION_PER_TIME = 1.0 / TIME_PER_ACTION
 FRAMES_PER_ACTION = 10.0
 
-animation_names = ['Walk']
-
 class Zombie:
-    images = None
+    image = None
 
-    def load_images(self):
-        if Zombie.images == None:
-            Zombie.images = {}
-            for name in animation_names:
-                Zombie.images[name] = [load_image("./zombie/"+ name + " (%d)" % i + ".png") for i in range(1, 11)]
+    def load_image(self):
+        if Zombie.image is None:
+            Zombie.image = load_image('enemy.png')
 
     def __init__(self):
         self.x, self.y = random.randint(1700-800, 1500), random.randint(125, 625)
-        self.load_images()
-        self.frame = random.randint(0, 9)
-        self.dir = random.choice([-1,1])
-        self.size = 75
-
+        self.frame = random.randint(0, 7)
+        self.load_image()
+        self.dir = random.choice([-1, 1])
+        # self.size = 75
 
     def update(self):
-        self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % FRAMES_PER_ACTION
-        # self.x += RUN_SPEED_PPS * self.dir * game_framework.frame_time
+        self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
         self.y += RUN_SPEED_PPS * self.dir * game_framework.frame_time
         if self.x > 1600:
             self.dir = -1
@@ -51,14 +44,12 @@ class Zombie:
 
         self.x = clamp(800, self.x, 1600)
         self.y = clamp(125, self.y, 625)
-        pass
-
 
     def draw(self):
         if self.dir < 0:
-            Zombie.images['Walk'][int(self.frame)].composite_draw(0, 'h', self.x, self.y, self.size, self.size)
+            Zombie.image.clip_draw(int(self.frame) * 100, 200, 100, 100, self.x, self.y)
         else:
-            Zombie.images['Walk'][int(self.frame)].draw(self.x, self.y, self.size, self.size)
+            Zombie.image.clip_draw(int(self.frame) * 100, 200, 100, 100, self.x, self.y)
         draw_rectangle(*self.get_bb())
 
     def handle_event(self, event):
@@ -68,9 +59,8 @@ class Zombie:
         if group == 'zombie:ball':
             self.size -= 100
             self.y = 100
-            if self.size == 0 :
+            if self.size == 0:
                 game_world.remove_object(self)
 
-
     def get_bb(self):
-        return self.x - self.size/2, self.y - self.size/2, self.x + self.size/2, self.y + self.size/2
+        return self.x - 20, self.y - 40, self.x + 20, self.y + 40
