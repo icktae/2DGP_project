@@ -4,11 +4,6 @@ from sdl2 import SDLK_UP, SDLK_DOWN, SDLK_q, SDLK_w
 from ball import Ball
 import game_world
 import game_framework
-
-
-# state event check
-# ( state event type, event value )
-
 def right_down(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RIGHT
 
@@ -311,7 +306,6 @@ class Boy:
             draw_rectangle(*self.get_bb())
 
 
-    # fill here
     def get_bb(self):
         return self.x - 20, self.y - 40, self.x + 20, self.y + 30
 
