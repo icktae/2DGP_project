@@ -1,5 +1,3 @@
-# 이 코드는 각 상태들을 객체로 구현한 것임.
-
 from pico2d import get_time, load_image, load_font, clamp, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT, \
     draw_rectangle
 from sdl2 import SDLK_UP, SDLK_DOWN
@@ -75,8 +73,6 @@ class Idle:
 
     @staticmethod
     def exit(boy, e):
-        if space_down(e):
-            boy.fire_ball()
         pass
 
     @staticmethod
@@ -98,23 +94,21 @@ class Run:
         elif left_down(e) or left_up(e):  # 왼쪽으로 RUN
             boy.dir, boy.action, boy.face_dir = -1, 0, -1
         elif up_down(e):  # 위쪽으로 RUN
-            boy.dir_y, boy.action, boy.face_dir = 1, 1, 1
+            boy.dir_y, boy.action, boy.face_dir = 1, 1, boy.face_dir
         elif down_down(e):  # 아래쪽으로 RUN
-            boy.dir_y, boy.action, boy.face_dir = -1, 1, -1
+            boy.dir_y, boy.action, boy.face_dir = -1, 1, boy.face_dir
+
 
     @staticmethod
     def exit(boy, e):
-        if space_down(e):
-            boy.fire_ball()
-
         pass
 
     @staticmethod
     def do(boy):
         boy.x += boy.dir * RUN_SPEED_PPS * game_framework.frame_time
         boy.y += boy.dir_y * RUN_SPEED_PPS * game_framework.frame_time
-        boy.x = clamp(25, boy.x, 1600 - 25)
-        boy.y = clamp(25, boy.y, 1200 - 25)
+        boy.x = clamp(25, boy.x, 1700)
+        boy.y = clamp(125, boy.y, 625)
         boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
 
         if boy.dir == 1:
@@ -125,6 +119,17 @@ class Run:
             boy.action = 1
         elif boy.dir_y == -1:
             boy.action = 1
+
+        # boy.x -> over  game clear
+        if boy.x >= 1600 :
+            game_framework.quit()
+
+        # boy.y -> under 25, over 625 game over
+        if boy.y <= 125 or boy.y >= 625:
+            game_framework.quit()
+
+        #
+
     @staticmethod
     def draw(boy):
         boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
@@ -171,7 +176,7 @@ class Boy:
         self.font = load_font('ENCR10B.TTF', 16)
         self.state_machine = StateMachine(self)
         self.state_machine.start()
-        self.ball_count = 10
+        # self.ball_count = 10
 
     def update(self):
         self.state_machine.update()
@@ -181,7 +186,7 @@ class Boy:
 
     def draw(self):
         self.state_machine.draw()
-        self.font.draw(self.x - 10, self.y + 50, f'{self.ball_count:02d}', (255, 255, 0))
+        # self.font.draw(self.x - 10, self.y + 50, f'{self.ball_count:02d}', (255, 255, 0))
         draw_rectangle(*self.get_bb())
 
     # fill here
