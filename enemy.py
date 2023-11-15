@@ -64,3 +64,27 @@ class Enemy:
 
     def get_bb(self):
         return self.x - 20, self.y - 40, self.x + 20, self.y + 40
+
+
+
+
+    # def build_behavior_tree(self):
+    #     a1 = Action('Set target location', self.set_target_location, 500, 50)
+    #
+    #     a2 = Action('Move to', self.move_to)
+    #
+    #     root = SEQ_move_to_target_location = Sequence('Move to target location', a1, a2)
+    #
+    #     a3 = Action('Set random location', self.set_random_location)
+    #     root = SEQ_wander = Sequence('Wander', a3, a2)
+    #
+    #     c1 = Condition('소년이 근처에 있는가?', self.is_boy_nearby, 7)
+    #     c2 = Condition('소년보다 공이 많은가?', self.more_ball_than_boy)
+    #     a4 = Action('접근', self.move_to_boy)
+    #     root = SEQ_chase_boy = Sequence('소년을 추적', c1, c2, a4)
+    #
+    #     c3 = Condition('소년보다 공이 적은가?', self.less_ball_than_boy)
+    #     a5 = Action('run away', self.run_away_boy)
+    #     root = SEQ_runaway_boy = Sequence('소년을 추적', c1, c3, a5)
+    #     root = SEL_chase_or_flee = Selector('추적 또는 배회', SEQ_chase_boy, SEQ_runaway_boy, SEQ_wander)
+    #
