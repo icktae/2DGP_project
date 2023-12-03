@@ -7,10 +7,14 @@ import game_world
 from grass import Grass
 from boy import Boy
 from clear import Clear
-from ball import Ball
+
 from enemy import Enemy
 
 # boy = None
+
+from background import FixedBackground as Background
+
+import server
 
 def handle_events():
     events = get_events()
@@ -20,40 +24,23 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            boy.handle_event(event)
+            server.boy.handle_event(event)
 
 
 def init():
-    global grass
-    global boy
-    global enemy
+    hide_cursor()
 
-    running = True
+    server.background = Background()
+    game_world.add_object(server.background, 0)
 
-    grass = Grass()
-    game_world.add_object(grass, 0)
+    server.boy = Boy()
+    game_world.add_object(server.boy, 1)
+    game_world.add_collision_pair('boy:ball', server.boy, None)
 
-    boy = Boy()
-    game_world.add_object(boy, 1)
-
-    enemys = [Enemy() for _ in range(10)]
-    game_world.add_objects(enemys, 1)
-    game_world.add_collision_pair('boy:enemy', boy, None)
-    for enemy in enemys:
-       game_world.add_collision_pair('boy:enemy', None, enemy)
-       game_world.add_collision_pair('enemy:ball', enemy, None)
-
-    # fill here
-    # global balls
-    # balls = [Ball(random.randint(100, 1600 - 100), 60, 0) for _ in range(30)]
-    # game_world.add_objects(balls, 1)
-    #
-    #
-    #
-    # game_world.add_collision_pair('boy:ball', boy, None)
-    # for ball in balls:
-    #     game_world.add_collision_pair('boy:ball', None, ball)
-
+    for _ in range(20):
+        enemy = Enemy()
+        game_world.add_object(enemy)
+        game_world.add_collision_pair('boy:enemy', None, enemy)
 
 
 
@@ -64,7 +51,6 @@ def finish():
 
 def update():
     game_world.update()
-    # fill here
     game_world.handle_collisions()
 
 def draw():
