@@ -261,43 +261,15 @@ class Speedup:
     @staticmethod
     def do(boy):
         pass
-        # speed_multiplier = 2
-        #
-        # boy.x += boy.dir * RUN_SPEED_PPS * speed_multiplier * game_framework.frame_time
-        # boy.y += boy.dir_y * RUN_SPEED_PPS * speed_multiplier * game_framework.frame_time
-        # boy.x = clamp(25, boy.x, 1700)
-        # boy.y = clamp(125, boy.y, 625)
-        # boy.frame = (boy.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % 8
-
-        # if boy.dir == -1:
-        #     boy.action = 0
-        #
-        # # boy.x -> over  game clear
-        # if boy.x >= 1600 :
-        #     print("Touch Down")
-        #
-        #
-        # # boy.y -> under 25, over 625 game over
-        # if boy.y <= 125 or boy.y >= 625:
-        #     print('Game Over')
-        #
-        # if get_time() >= boy.speedup_time :
-        #     boy.state_machine.handle_event(('TIME_OUT', 0))
-
-    # @staticmethod
-    # def draw(boy):
-    #     boy.image.clip_draw(int(boy.frame) * 100, boy.action * 100, 100, 100, boy.x, boy.y)
-
-
 
 class Backstep:
     @staticmethod
     def enter(boy, e):
         print("backstep")
         boy.action = 1
-        boy.speed = RUN_SPEED_PPS * 2
+        boy.speed = RUN_SPEED_PPS * 4
         boy.dir = math.pi
-        boy.backstep_distance = 200  # Adjust this value based on your requirements
+        boy.backstep_distance = 100  # Adjust this value based on your requirements
         boy.initial_x = boy.x
 
     @staticmethod
@@ -324,32 +296,40 @@ class StateMachine:
         self.boy = boy
         self.cur_state = Idle
         self.transitions = {
-            Idle: {right_down: RunRight, left_down: RunLeft, left_up: RunRight, right_up: RunLeft, up_down: RunUp, q_down: Speedup, w_down: Backstep, time_out: Idle,
-                   down_down: RunDown, up_up: RunDown, down_up: RunUp},
-            RunRight: {right_up: Idle, left_down: Idle, up_down: RunRightUp, up_up: RunRightDown, q_down: Speedup, w_down: Backstep, time_out: Idle,
-                       down_down: RunRightDown, down_up: RunRightUp},
-            RunRightUp: {up_up: RunRight, right_up: RunUp, left_down: RunUp, down_down: RunRight, q_down: Speedup, w_down: Backstep, time_out: Idle},
-            RunUp: {up_up: Idle, left_down: RunLeftUp, down_down: Idle, right_down: RunRightUp, q_down: Speedup, w_down: Backstep, time_out: Idle,
-                    left_up: RunRightUp, right_up: RunLeftUp},
-            RunLeftUp: {right_down: RunUp, down_down: RunLeft, left_up: RunUp, up_up: RunLeft, q_down: Speedup, w_down: Backstep, time_out: Idle},
-            RunLeft: {left_up: Idle, up_down: RunLeftUp, right_down: Idle, down_down: RunLeftDown, q_down: Speedup, w_down: Backstep, time_out: Idle,
-                      up_up: RunLeftDown, down_up: RunLeftUp},
-            RunLeftDown: {left_up: RunDown, down_up: RunLeft, up_down: RunLeft, right_down: RunDown, q_down: Speedup, w_down: Backstep, time_out: Idle},
-            RunDown: {down_up: Idle, left_down: RunLeftDown, up_down: Idle, right_down: RunRightDown, q_down: Speedup, w_down: Backstep, time_out: Idle,
-                      left_up: RunRightDown, right_up: RunLeftDown},
-            RunRightDown: {right_up: RunDown, down_up: RunRight, left_down: RunDown, up_down: RunRight, q_down: Speedup, w_down: Backstep, time_out: Idle},
+            Idle: {right_down: RunRight,  right_up: RunLeft, left_down: RunLeft, left_up: RunRight, up_down: RunUp, up_up: RunDown, down_down: RunDown, down_up: RunUp,
+                   w_down: Backstep, q_down: Speedup},
 
-            Speedup: {right_down: RunRight, left_down: RunLeft, left_up: Idle, right_up: Idle, up_down: RunUp, time_out: Idle,
-                   down_down: RunDown, up_up: Idle, down_up: Idle},
-            Backstep: {right_down: RunRight, left_down: RunLeft, left_up: Idle, right_up: Idle, up_down: RunUp,
-                       time_out: Idle, down_down: RunDown, up_up: Idle, down_up: Idle}
+            RunRight: {right_up: Idle, left_down: Idle, up_down: RunRightUp, up_up: RunRightDown, down_down: RunRightDown, down_up: RunRightUp
+                       , q_down: Speedup},
+            RunRightUp: {right_up: RunUp, left_down: RunUp, down_down: RunRight, up_up: RunRight
+                         , q_down: Speedup},
+            RunRightDown: {right_up: RunDown, left_down: RunDown, down_up: RunRight, up_down: RunRight
+                           , q_down: Speedup},
 
-            # Speedup: {right_down: RunRight, left_down: RunLeft, up_down: Run, down_down: Run, w_down: Backstep,
-            #           right_up: Idle, left_up: Idle, up_up: Idle, down_up: Idle, space_down: Idle, time_out: Run},
-            # Backstep: {right_down: Run, left_down: Run, up_down: Run, down_down: Run,
-            #            right_up: Idle, left_up: Idle, up_up: Idle, down_up: Idle, space_down: Idle, time_out: Run}
+            RunLeft: {left_up: Idle, right_down: Idle, up_down: RunLeftUp,  up_up: RunLeftDown, down_down: RunLeftDown, down_up: RunLeftUp
+                      , q_down: Speedup},
+            RunLeftUp: {left_up: RunUp, right_down: RunUp, down_down: RunLeft,  up_up: RunLeft
+                        , q_down: Speedup},
+            RunLeftDown: {left_up: RunDown, right_down: RunDown, down_up: RunLeft, up_down: RunLeft
+                         , q_down: Speedup},
 
-        }
+            RunDown: {down_up: Idle, left_down: RunLeftDown, up_down: Idle, right_down: RunRightDown,
+                      left_up: RunRightDown, right_up: RunLeftDown
+                      , q_down: Speedup},
+            RunUp: {up_up: Idle, left_down: RunLeftUp, down_down: Idle, right_down: RunRightUp, left_up: RunRightUp,
+                    right_up: RunLeftUp
+                   , q_down: Speedup},
+            #
+            # Backstep: {w_down: Backstep, time_out: Idle
+            #            },
+            # Speedup: {right_down: RunRight,  right_up: RunLeft, left_down: RunLeft, left_up: RunRight, up_down: RunUp, up_up: RunDown, down_down: RunDown, down_up: RunUp,
+            #           time_out: Idle, up_up: Idle, down_up: Idle},
+
+
+
+             }
+
+
 
 
 
@@ -391,6 +371,8 @@ class Boy:
         # self.font = load_font('ENCR10B.TTF', 128)
         self.state_machine = StateMachine(self)
         self.state_machine.start()
+
+
         # self.ball_count = 10
 
     def update(self):

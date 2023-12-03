@@ -1,13 +1,9 @@
-import random
-
 from pico2d import *
 import game_framework
 
 import game_world
-from grass import Grass
-from boy import Boy
-from clear import Clear
 
+from boy import Boy
 from enemy import Enemy
 
 # boy = None

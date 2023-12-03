@@ -12,7 +12,8 @@ class FixedBackground:
         self.ch = get_canvas_height()
         self.w = self.image.w
         self.h = self.image.h
-        # fill here
+
+        
         # self.bgm = load_music('football.mp3')
         # self.bgm.set_volume(32)
         # self.bgm.repeat_play()
