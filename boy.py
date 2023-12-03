@@ -280,7 +280,7 @@ class Boy:
         self.dir = 0
         self.size = 75
         self.dir_y = 0
-        self.image = load_image('sonic_animation.png')
+        self.image = load_image('PLAYER.png')
         self.font = load_font('ENCR10B.TTF', 128)
         self.state_machine = StateMachine(self)
         self.state_machine.start()
