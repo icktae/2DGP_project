@@ -21,7 +21,7 @@ class Enemy:
 
     def load_image(self):
         if Enemy.image is None:
-            Enemy.image = load_image('enemy.png')
+            Enemy.image = load_image('image/SINRUZI.png')
 
     def __init__(self):
         self.x, self.y = random.randint(1700-800, 1500), random.randint(125, 625)
