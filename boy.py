@@ -70,7 +70,7 @@ def time_out(e):
 
 # Boy Run Speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
-RUN_SPEED_KMPH = 20.0  # Km / Hour
+RUN_SPEED_KMPH = 30.0  # Km / Hour
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
 RUN_SPEED_MPS = (RUN_SPEED_MPM / 60.0)
 RUN_SPEED_PPS = (RUN_SPEED_MPS * PIXEL_PER_METER)
@@ -434,7 +434,7 @@ class Boy:
             speed_up_effect = SpeedUpEffect(self.x, self.y)
             game_world.add_object(speed_up_effect)
             self.bgm = load_wav('sound/slash2.wav')
-            self.bgm.set_volume(32)
+            self.bgm.set_volume(80)
             self.bgm.play(1)
 
     def w_effect(self):
@@ -442,7 +442,7 @@ class Boy:
             back_step_effect = Back_stepEffect(self.x, self.y)
             game_world.add_object(back_step_effect)
             self.bgm = load_wav('sound/slash.ogg')
-            self.bgm.set_volume(32)
+            self.bgm.set_volume(80)
             self.bgm.play(1)
 
     # def game_over_sound(self):
@@ -477,3 +477,7 @@ class Boy:
         if group == 'boy:enemy':
             gameover = Gameover()  # Create Gameover instance
             game_world.add_object(gameover, 1)
+            Gameover.game_over_sound.play()
+            game_world.remove_object(self)
+
+

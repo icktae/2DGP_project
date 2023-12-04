@@ -46,7 +46,7 @@ def init():
     server.skill_icon = Skill()
     game_world.add_object(server.skill_icon, 1)
 
-    for _ in range(1):
+    for _ in range(4):
         enemy = Enemy()
         game_world.add_object(enemy)
         # game_world.add_collision_pair('enemy:ball', enemy, None)
