@@ -6,6 +6,7 @@ import game_world
 from boy import Boy
 from enemy import Enemy
 from speed_up_effect import SpeedUpEffect
+from skill_icon import Skill
 
 # boy = None
 
@@ -34,8 +35,11 @@ def init():
     game_world.add_object(server.boy, 1)
     game_world.add_collision_pair('boy:ball', server.boy, None)
 
-    server.speed_up_effect = SpeedUpEffect()
-    game_world.add_object(server.speed_up_effect, 1)
+    # server.speed_up_effect = SpeedUpEffect()
+    # game_world.add_object(server.speed_up_effect, 1)
+
+    server.skill_icon = Skill()
+    game_world.add_object(server.skill_icon, 1)
 
     for _ in range(20):
         enemy = Enemy()

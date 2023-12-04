@@ -288,11 +288,9 @@ class Speedup:
     @staticmethod
     def enter(boy, e):
         print("speed up")
-        boy.speedup_time = get_time() + 0.4
-        boy.speed = RUN_SPEED_PPS * 2
-
-        if get_time() >= boy.speedup_time :
-            boy.state_machine.handle_event(('TIME_OUT', 0))
+        boy.speedup_time = get_time() + 0.3
+        boy.original_speed = boy.speed  # 원래 속도 저장
+        boy.speed = boy.speed * 2.5
 
     @staticmethod
     def exit(boy, e):
@@ -300,17 +298,25 @@ class Speedup:
 
     @staticmethod
     def do(boy):
-        pass
+        if get_time() >= boy.speedup_time:
+            boy.speed = boy.original_speed
+            if boy.previous_state:
+                boy.state_machine.cur_state = boy.previous_state
+                boy.previous_state = None
+            else:
+                boy.state_machine.cur_state = boy.previous_state
+                boy.previous_state = None
+
 
 class Backstep:
     @staticmethod
     def enter(boy, e):
-        print("backstep")
+        print('backstep')
         boy.action = 1
         boy.speed = RUN_SPEED_PPS * 4
         boy.dir = math.pi
-        boy.backstep_distance = 100  # Adjust this value based on your requirements
         boy.initial_x = boy.x
+        boy.backstep_time = get_time() + 0.06
 
     @staticmethod
     def exit(boy, e):
@@ -318,17 +324,16 @@ class Backstep:
 
     @staticmethod
     def do(boy):
-        # Move to the left only if the boy was moving right
-        if boy.dir > 0:
-            boy.x -= boy.speed * game_framework.frame_time
+        boy.x -= boy.speed * game_framework.frame_time
 
-        # Check if the distance traveled exceeds the backstep distance
-        if boy.x <= boy.initial_x - boy.backstep_distance:
-            boy.x = boy.initial_x - boy.backstep_distance  # Set x to the target position
+        if get_time() >= boy.backstep_time :
             boy.state_machine.handle_event(('TIME_OUT', 0))
 
-class Dash :
-    pass
+            if boy.previous_state:
+                boy.state_machine.cur_state = boy.previous_state
+                boy.previous_state = None
+            else:
+                boy.state_machine.handle_event(('TIME_OUT', 0))
 
 
 class StateMachine:
@@ -340,28 +345,29 @@ class StateMachine:
                    w_down: Backstep, q_down: Speedup},
 
             RunRight: {right_up: Idle, left_down: Idle, up_down: RunRightUp, up_up: RunRightDown, down_down: RunRightDown, down_up: RunRightUp
-                       , q_down: Speedup},
+                       ,w_down: Backstep, q_down: Speedup},
             RunRightUp: {right_up: RunUp, left_down: RunUp, down_down: RunRight, up_up: RunRight
-                         , q_down: Speedup},
+                         ,w_down: Backstep, q_down: Speedup},
             RunRightDown: {right_up: RunDown, left_down: RunDown, down_up: RunRight, up_down: RunRight
-                           , q_down: Speedup},
+                           ,w_down: Backstep, q_down: Speedup},
 
             RunLeft: {left_up: Idle, right_down: Idle, up_down: RunLeftUp,  up_up: RunLeftDown, down_down: RunLeftDown, down_up: RunLeftUp
-                      , q_down: Speedup},
+                      ,w_down: Backstep, q_down: Speedup},
             RunLeftUp: {left_up: RunUp, right_down: RunUp, down_down: RunLeft,  up_up: RunLeft
-                        , q_down: Speedup},
+                        ,w_down: Backstep, q_down: Speedup},
             RunLeftDown: {left_up: RunDown, right_down: RunDown, down_up: RunLeft, up_down: RunLeft
-                         , q_down: Speedup},
+                         ,w_down: Backstep, q_down: Speedup},
 
             RunDown: {down_up: Idle, left_down: RunLeftDown, up_down: Idle, right_down: RunRightDown,
                       left_up: RunRightDown, right_up: RunLeftDown
-                      , q_down: Speedup},
+                      ,w_down: Backstep, q_down: Speedup},
             RunUp: {up_up: Idle, left_down: RunLeftUp, down_down: Idle, right_down: RunRightUp, left_up: RunRightUp,
                     right_up: RunLeftUp
-                   , q_down: Speedup},
+                   ,w_down: Backstep, q_down: Speedup},
             #
-            Backstep: {w_down: Backstep, time_out: Idle
-                       },
+            Backstep: {right_down: RunRight, right_up: Idle, left_down: RunLeft, left_up: Idle, up_down: RunUp,
+                       up_up: Idle, down_down: RunDown, down_up: Idle,
+                       w_up: Idle, time_out: Idle},
             Speedup: {right_down: RunRight,  right_up: RunLeft, left_down: RunLeft, left_up: RunRight, up_down: RunUp, up_up: RunDown, down_down: RunDown, down_up: RunUp,
                       time_out: Idle, up_up: Idle, down_up: Idle},
 
@@ -382,7 +388,6 @@ class StateMachine:
         self.boy.x += math.cos(self.boy.dir) * self.boy.speed * game_framework.frame_time
         self.boy.y += math.sin(self.boy.dir) * self.boy.speed * game_framework.frame_time
 
-
     def handle_event(self, e):
         for check_event, next_state in self.transitions[self.cur_state].items():
             if check_event(e):
@@ -390,13 +395,9 @@ class StateMachine:
                 self.cur_state = next_state
                 self.cur_state.enter(self.boy, e)
 
-
                 return True
 
         return False
-
-    # def draw(self):
-    #     self.cur_state.draw(self.boy)
 
 class Boy:
     def __init__(self):
@@ -415,8 +416,9 @@ class Boy:
         self.speed_up_effect = 'SpeedUpEffect'
         self.back_step_effect = "Back_stepEffect"
 
+        self.previous_state = None
 
-        # self.ball_count = 10
+
 
     def update(self):
         self.state_machine.update()
@@ -435,6 +437,9 @@ class Boy:
             game_world.add_object(back_step_effect)
 
     def handle_event(self, event):
+        if (event.type == SDL_KEYDOWN and event.key == SDLK_q) or (event.type == SDL_KEYDOWN and event.key == SDLK_w):
+            self.previous_state = self.state_machine.cur_state  # Store the previous state before q or w is pressed
+
         self.state_machine.handle_event(('INPUT', event))
 
     def draw(self):
