@@ -9,7 +9,7 @@ import play_mode
 
 import server
 
-# zombie Run Speed
+# enemy Run Speed
 PIXEL_PER_METER = (10.0 / 0.3)  # 10 pixel 30 cm
 RUN_SPEED_KMPH = 10.0  # Km / Hour
 RUN_SPEED_MPM = (RUN_SPEED_KMPH * 1000.0 / 60.0)
@@ -35,10 +35,12 @@ class Enemy:
     def __init__(self, x = None, y = None):
         self.x = x if x else random.randint(1200, 1900)
         self.y = y if y else random.randint(200, 1050)
+        self.origin_x = self.x  # 원래 위치 x좌표 초기화
+        self.origin_y = self.y
         self.size = clamp(1, random.random() * 2, 1.3)
         self.load_images()
         self.dir = 0.0  # radian 값으로 방향을 표시
-        self.speed = 0.0
+        self.speed = random.randint(0, 1)
         self.frame = random.randint(0, 9)
         self.state = 'Idle'
 
@@ -48,7 +50,7 @@ class Enemy:
 
 
     def get_bb(self):
-        return self.x - 50, self.y - 50, self.x + 50, self.y + 50
+        return self.x - 20, self.y - 40, self.x + 20, self.y + 40
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % FRAMES_PER_ACTION
@@ -83,9 +85,12 @@ class Enemy:
         distance2 = (x1 - x2) ** 2 + (y1 - y2) ** 2
         return distance2 < (PIXEL_PER_METER * r) ** 2
 
+
+
+
     def move_slightly_to(self, tx, ty):
         self.dir = math.atan2(ty - self.y, tx - self.x)
-        self.speed = RUN_SPEED_PPS
+        self.speed = RUN_SPEED_PPS * random.uniform(0, 2)
         self.x += self.speed * math.cos(self.dir) * game_framework.frame_time
         self.y += self.speed * math.sin(self.dir) * game_framework.frame_time
 
@@ -117,18 +122,34 @@ class Enemy:
         else:
             return BehaviorTree.RUNNING
 
+    def wait(self):
+        self.state = 'Idle'
+        return BehaviorTree.SUCCESS
+
+    def is_boy_far_away(self, distance):
+        if self.distance_less_than(server.boy.x, server.boy.y, self.x, self.y, distance):
+            return BehaviorTree.FAIL
+        else:
+            return BehaviorTree.SUCCESS
+
+    def move_to_origin(self):
+        self.state = 'Walk'
+        self.move_slightly_to(self.origin_x, self.origin_y)
+        if self.distance_less_than(self.origin_x, self.origin_y, self.x, self.y, 1):
+            return BehaviorTree.SUCCESS
+        else:
+            return BehaviorTree.RUNNING
+
     def build_behavior_tree(self):
-        a1 = Action('Set random location', self.set_random_location)
-        a2 = Action('Move to', self.move_to)
-        root = SEQ_move_to_target_location = Sequence('move to 1', a1, a2)
+        a1 = Action('대기', self.wait)
+        c1 = Condition('소년이 20미터 이내에 있는가?', self.is_boy_nearby, 25)
+        a2 = Action('접근', self.move_to_boy)
+        SEQ_chase_boy = Sequence('소년을 추적', c1, a2)
 
-        a3 = Action('Set random location', self.set_random_location)
-        root = SEQ_wander = Sequence('Wander', a3, a2)
+        c2 = Condition('소년이 15미터 밖에 있는가?', self.is_boy_far_away, 15)
+        a3 = Action('원래 위치로 돌아가기', self.move_to_origin)
+        SEQ_return_origin = Sequence('원래 위치로 돌아가기', c2, a3)
 
-        c1 = Condition('소년이 근처에 있는가?', self.is_boy_nearby, 7)
-        a4 = Action('접근', self.move_to_boy)
-        root = SEQ_chase_boy = Sequence('소년을 추적', c1, a4)
-
-        root = SEL_chase_or_flee = Selector('추적 또는 배회', SEQ_chase_boy, SEQ_wander)
+        root = SEL_chase_or_return = Selector('추적 또는 복귀', SEQ_chase_boy, SEQ_return_origin)
 
         self.bt = BehaviorTree(root)
