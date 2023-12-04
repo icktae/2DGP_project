@@ -478,6 +478,6 @@ class Boy:
             server.gameover = Gameover()  # Create Gameover instance
             game_world.add_object(server.gameover, 1)
             Gameover.game_over_sound.play()
-            # game_world.remove_object(self)
+            game_world.remove_object(self)
 
 
