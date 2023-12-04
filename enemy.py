@@ -49,6 +49,9 @@ class Enemy:
         self.loc_no = 0
 
 
+    def stop(self):
+        self.speed = 0
+
     def get_bb(self):
         return self.x - 20, self.y - 40, self.x + 20, self.y + 40
 
@@ -90,7 +93,7 @@ class Enemy:
 
     def move_slightly_to(self, tx, ty):
         self.dir = math.atan2(ty - self.y, tx - self.x)
-        self.speed = RUN_SPEED_PPS * random.uniform(0, 2)
+        self.speed = RUN_SPEED_PPS * random.uniform(0, 3)
         self.x += self.speed * math.cos(self.dir) * game_framework.frame_time
         self.y += self.speed * math.sin(self.dir) * game_framework.frame_time
 
@@ -117,7 +120,7 @@ class Enemy:
     def move_to_boy(self, r=0.5):
         self.state = 'Walk'
         self.move_slightly_to(server.boy.x, server.boy.y)
-        if self.distance_less_than(server.boy.x, server.boy.y, self.x, self.y, r):
+        if self.distance_less_than(server.boy.x * random.uniform(1,3), server.boy.y * random.uniform(1,3), self.x, self.y, r):
             return BehaviorTree.SUCCESS
         else:
             return BehaviorTree.RUNNING
@@ -142,7 +145,7 @@ class Enemy:
 
     def build_behavior_tree(self):
         a1 = Action('대기', self.wait)
-        c1 = Condition('소년이 20미터 이내에 있는가?', self.is_boy_nearby, 25)
+        c1 = Condition('소년이 20미터 이내에 있는가?', self.is_boy_nearby, 15)
         a2 = Action('접근', self.move_to_boy)
         SEQ_chase_boy = Sequence('소년을 추적', c1, a2)
 

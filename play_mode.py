@@ -7,6 +7,7 @@ from boy import Boy
 from enemy import Enemy
 from speed_up_effect import SpeedUpEffect
 from skill_icon import Skill
+from touchdown import Touchdown
 
 # boy = None
 
@@ -42,7 +43,7 @@ def init():
     server.skill_icon = Skill()
     game_world.add_object(server.skill_icon, 1)
 
-    for _ in range(11):
+    for _ in range(1):
         enemy = Enemy()
         game_world.add_object(enemy)
         # game_world.add_collision_pair('enemy:ball', enemy, None)
@@ -59,6 +60,13 @@ def finish():
 def update():
     game_world.update()
     game_world.handle_collisions()
+
+    # Check if boy's x value exceeds 2250
+    if server.boy.x > 2250:
+        server.touchdown = Touchdown()  # Create Skill instance
+        game_world.add_object(server.touchdown, 1)
+
+
 
 def draw():
     clear_canvas()
