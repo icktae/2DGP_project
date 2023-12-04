@@ -49,7 +49,6 @@ def init():
     for _ in range(4):
         enemy = Enemy()
         game_world.add_object(enemy)
-        # game_world.add_collision_pair('enemy:ball', enemy, None)
         game_world.add_collision_pair('boy:enemy', None, enemy)
 
 
@@ -57,6 +56,7 @@ def init():
 
 def finish():
     game_world.clear()
+
     pass
 
 

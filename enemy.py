@@ -81,9 +81,9 @@ class Enemy:
 
     def handle_collision(self, group, other):
         if group == 'enemy:boy':
-            gameover = Gameover()  # Create Gameover instance
-            game_world.add_object(gameover, 1)
-            game_world.remove_object(self)
+            server.gameover = Gameover()  # Create Skill instance
+            game_world.add_object(server.gameover, 1)
+            Gameover.game_over_sound.play()
 
     def set_target_location(self, x=None, y=None):
         if not x or not y:

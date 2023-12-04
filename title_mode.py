@@ -2,6 +2,7 @@ import game_framework
 from pico2d import *
 
 import play_mode
+from gameover import Gameover
 
 
 def init():
