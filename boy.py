@@ -401,7 +401,7 @@ class StateMachine:
 
 class Boy:
     def __init__(self):
-        self.x, self.y = 600, 350
+        self.x, self.y = 600, 620 #1800
         self.frame = 0
         self.action = 3
         self.face_dir = 1
