@@ -4,6 +4,7 @@ from pico2d import *
 from sdl2 import SDLK_UP, SDLK_DOWN, SDLK_q, SDLK_w
 
 from speed_up_effect import SpeedUpEffect
+from back_step_effect import Back_stepEffect
 
 import game_world
 import game_framework
@@ -96,6 +97,9 @@ class Idle:
         if q_down(e):
             boy.q_effect()
 
+        if w_down(e):
+            boy.w_effect()
+
     @staticmethod
     def do(boy):
         pass
@@ -113,6 +117,9 @@ class RunRight:
     def exit(boy, e):
         if q_down(e):
             boy.q_effect()
+
+        if w_down(e):
+            boy.w_effect()
 
     @staticmethod
     def do(boy):
@@ -132,6 +139,9 @@ class RunRightUp:
         if q_down(e):
             boy.q_effect()
 
+        if w_down(e):
+            boy.w_effect()
+
     @staticmethod
     def do(boy):
         pass
@@ -149,6 +159,9 @@ class RunRightDown:
     def exit(boy, e):
         if q_down(e):
             boy.q_effect()
+
+        if w_down(e):
+            boy.w_effect()
 
     @staticmethod
     def do(boy):
@@ -168,6 +181,9 @@ class RunLeft:
         if q_down(e):
             boy.q_effect()
 
+        if w_down(e):
+            boy.w_effect()
+
     @staticmethod
     def do(boy):
         pass
@@ -186,6 +202,9 @@ class RunLeftUp:
         if q_down(e):
             boy.q_effect()
 
+        if w_down(e):
+            boy.w_effect()
+
     @staticmethod
     def do(boy):
         pass
@@ -203,6 +222,9 @@ class RunLeftDown:
     def exit(boy, e):
         if q_down(e):
             boy.q_effect()
+
+        if w_down(e):
+            boy.w_effect()
 
     @staticmethod
     def do(boy):
@@ -225,6 +247,9 @@ class RunUp:
         if q_down(e):
             boy.q_effect()
 
+        if w_down(e):
+            boy.w_effect()
+
     @staticmethod
     def do(boy):
         pass
@@ -246,6 +271,9 @@ class RunDown:
     def exit(boy, e):
         if q_down(e):
             boy.q_effect()
+
+        if w_down(e):
+            boy.w_effect()
 
     @staticmethod
     def do(boy):
@@ -385,6 +413,7 @@ class Boy:
         self.state_machine.start()
 
         self.speed_up_effect = 'SpeedUpEffect'
+        self.back_step_effect = "Back_stepEffect"
 
 
         # self.ball_count = 10
@@ -399,6 +428,11 @@ class Boy:
         if self.speed_up_effect == 'SpeedUpEffect':
             speed_up_effect = SpeedUpEffect(self.x, self.y)
             game_world.add_object(speed_up_effect)
+
+    def w_effect(self):
+        if self.back_step_effect == 'Back_stepEffect':
+            back_step_effect = Back_stepEffect(self.x, self.y)
+            game_world.add_object(back_step_effect)
 
     def handle_event(self, event):
         self.state_machine.handle_event(('INPUT', event))

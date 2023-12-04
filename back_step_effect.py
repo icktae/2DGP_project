@@ -3,12 +3,12 @@ from pico2d import *
 import game_world
 
 
-class SpeedUpEffect:
+class Back_stepEffect:
     image = None
-    def __init__(self, x = 175, y = 130, velocity = 1):
-        if SpeedUpEffect.image == None:
-            SpeedUpEffect.image = load_image('image/cut1.png')
-        self.x, self.y, self.velocity = 175, 130, velocity
+    def __init__(self, x = 50, y = 500, velocity = 1):
+        if Back_stepEffect.image == None:
+            Back_stepEffect.image = load_image('image/cut2.png')
+        self.x, self.y, self.velocity = 150, 550, velocity
         self.timer = get_time() + 0.5
 
     def draw(self):

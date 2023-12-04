@@ -34,9 +34,8 @@ def init():
     game_world.add_object(server.boy, 1)
     game_world.add_collision_pair('boy:ball', server.boy, None)
 
-    # server.speed_up_effect = SpeedUpEffect()
-    # server.speed_up_effect.visible = False
-    # game_world.add_object(server.speed_up_effect, 1)
+    server.speed_up_effect = SpeedUpEffect()
+    game_world.add_object(server.speed_up_effect, 1)
 
     for _ in range(20):
         enemy = Enemy()
