@@ -6,6 +6,9 @@ from sdl2 import SDLK_UP, SDLK_DOWN, SDLK_q, SDLK_w
 from speed_up_effect import SpeedUpEffect
 from back_step_effect import Back_stepEffect
 
+from gameover import Gameover
+
+
 import game_world
 import game_framework
 
@@ -430,11 +433,24 @@ class Boy:
         if self.speed_up_effect == 'SpeedUpEffect':
             speed_up_effect = SpeedUpEffect(self.x, self.y)
             game_world.add_object(speed_up_effect)
+            self.bgm = load_wav('sound/slash2.wav')
+            self.bgm.set_volume(32)
+            self.bgm.play(1)
 
     def w_effect(self):
         if self.back_step_effect == 'Back_stepEffect':
             back_step_effect = Back_stepEffect(self.x, self.y)
             game_world.add_object(back_step_effect)
+            self.bgm = load_wav('sound/slash.ogg')
+            self.bgm.set_volume(32)
+            self.bgm.play(1)
+
+    # def game_over_sound(self):
+    #     if server.boy.y > 1098 or server.boy.y < 170 :
+    #         self.bgm = load_music('sound/gameover_sound.mp3')
+    #         self.bgm.set_volume(32)
+    #         self.bgm.play(1)
+    #
 
     def handle_event(self, event):
         if (event.type == SDL_KEYDOWN and event.key == SDLK_q) or (event.type == SDL_KEYDOWN and event.key == SDLK_w):
@@ -459,4 +475,5 @@ class Boy:
     def handle_collision(self, group, other):
 
         if group == 'boy:enemy':
-            game_framework.quit()
+            gameover = Gameover()  # Create Gameover instance
+            game_world.add_object(gameover, 1)

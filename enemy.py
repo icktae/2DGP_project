@@ -7,6 +7,8 @@ import game_world
 from behavior_tree import BehaviorTree, Action, Sequence, Condition, Selector
 import play_mode
 
+from gameover import Gameover
+
 import server
 
 # enemy Run Speed
@@ -48,16 +50,19 @@ class Enemy:
         self.build_behavior_tree()
         self.loc_no = 0
 
+        self.reached_goal = False
 
-    def stop(self):
-        self.speed = 0
+
+
 
     def get_bb(self):
         return self.x - 20, self.y - 40, self.x + 20, self.y + 40
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % FRAMES_PER_ACTION
-        self.bt.run()
+        if not self.reached_goal:  # Only run behavior tree if goal is not reached
+            self.bt.run()
+
 
     def draw(self):
         sx, sy = self.x - server.background.window_left, self.y - server.background.window_bottom
@@ -76,7 +81,8 @@ class Enemy:
 
     def handle_collision(self, group, other):
         if group == 'enemy:boy':
-            game_world.remove_object(self)
+            gameover = Gameover()  # Create Gameover instance
+            game_world.add_object(gameover, 1)
 
     def set_target_location(self, x=None, y=None):
         if not x or not y:
@@ -101,6 +107,7 @@ class Enemy:
         self.state = 'Walk'
         self.move_slightly_to(self.tx, self.ty)
         if self.distance_less_than(self.tx, self.ty, self.x, self.y, r):
+            self.set_patrol_location()
             return BehaviorTree.SUCCESS
         else:
             return BehaviorTree.RUNNING
@@ -127,6 +134,7 @@ class Enemy:
 
     def wait(self):
         self.state = 'Idle'
+        self.frame = 0
         return BehaviorTree.SUCCESS
 
     def is_boy_far_away(self, distance):
@@ -143,6 +151,26 @@ class Enemy:
         else:
             return BehaviorTree.RUNNING
 
+    def is_boy_reached_goal(self):
+        if server.boy.x > 2250:
+            return BehaviorTree.SUCCESS
+
+        else:
+            return BehaviorTree.FAIL
+
+
+
+    def stop(self):
+        self.speed = 0
+        self.reached_goal = True
+
+    def set_patrol_location(self):
+        self.tx = random.randint(int(self.x) - 100, int(self.x) + 100)
+        self.ty = random.randint(int(self.y) - 100, int(self.y) + 100)
+        return BehaviorTree.SUCCESS
+
+
+
     def build_behavior_tree(self):
         a1 = Action('대기', self.wait)
         c1 = Condition('소년이 20미터 이내에 있는가?', self.is_boy_nearby, 15)
@@ -153,6 +181,10 @@ class Enemy:
         a3 = Action('원래 위치로 돌아가기', self.move_to_origin)
         SEQ_return_origin = Sequence('원래 위치로 돌아가기', c2, a3)
 
-        root = SEL_chase_or_return = Selector('추적 또는 복귀', SEQ_chase_boy, SEQ_return_origin)
+        c3 = Condition('소년이 목표에 도달했는가?', self.is_boy_reached_goal)
+        a4 = Action('멈춤', self.stop)
+        SEQ_stop = Sequence('멈춤', c3, a4)
+
+        root = SEL_chase_or_return_or_stop = Selector('추적 또는 복귀 또는 멈춤', SEQ_chase_boy, SEQ_return_origin, SEQ_stop)
 
         self.bt = BehaviorTree(root)

@@ -11,6 +11,7 @@ class Back_stepEffect:
         self.x, self.y, self.velocity = 150, 550, velocity
         self.timer = get_time() + 0.5
 
+
     def draw(self):
         self.image.draw(self.x, self.y)
 

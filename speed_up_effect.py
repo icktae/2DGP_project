@@ -11,6 +11,7 @@ class SpeedUpEffect:
         self.x, self.y, self.velocity = 175, 130, velocity
         self.timer = get_time() + 0.5
 
+
     def draw(self):
         self.image.draw(self.x, self.y)
 

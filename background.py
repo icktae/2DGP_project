@@ -14,9 +14,9 @@ class FixedBackground:
         self.h = self.image.h
 
         
-        # self.bgm = load_music('football.mp3')
-        # self.bgm.set_volume(32)
-        # self.bgm.repeat_play()
+        self.bgm = load_music('sound/bgm.mp3')
+        self.bgm.set_volume(32)
+        self.bgm.repeat_play()
 
 
     def draw(self):
