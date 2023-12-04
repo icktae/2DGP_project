@@ -3,8 +3,11 @@ import math
 from pico2d import *
 from sdl2 import SDLK_UP, SDLK_DOWN, SDLK_q, SDLK_w
 
+from speed_up_effect import SpeedUpEffect
+
 import game_world
 import game_framework
+
 
 import server
 
@@ -90,7 +93,8 @@ class Idle:
 
     @staticmethod
     def exit(boy, e):
-        pass
+        if q_down(e):
+            boy.q_effect()
 
     @staticmethod
     def do(boy):
@@ -107,7 +111,8 @@ class RunRight:
 
     @staticmethod
     def exit(boy, e):
-        pass
+        if q_down(e):
+            boy.q_effect()
 
     @staticmethod
     def do(boy):
@@ -124,7 +129,8 @@ class RunRightUp:
 
     @staticmethod
     def exit(boy, e):
-        pass
+        if q_down(e):
+            boy.q_effect()
 
     @staticmethod
     def do(boy):
@@ -141,7 +147,8 @@ class RunRightDown:
 
     @staticmethod
     def exit(boy, e):
-        pass
+        if q_down(e):
+            boy.q_effect()
 
     @staticmethod
     def do(boy):
@@ -158,7 +165,8 @@ class RunLeft:
 
     @staticmethod
     def exit(boy, e):
-        pass
+        if q_down(e):
+            boy.q_effect()
 
     @staticmethod
     def do(boy):
@@ -175,7 +183,8 @@ class RunLeftUp:
 
     @staticmethod
     def exit(boy, e):
-        pass
+        if q_down(e):
+            boy.q_effect()
 
     @staticmethod
     def do(boy):
@@ -192,7 +201,8 @@ class RunLeftDown:
 
     @staticmethod
     def exit(boy, e):
-        pass
+        if q_down(e):
+            boy.q_effect()
 
     @staticmethod
     def do(boy):
@@ -212,7 +222,8 @@ class RunUp:
 
     @staticmethod
     def exit(boy, e):
-        pass
+        if q_down(e):
+            boy.q_effect()
 
     @staticmethod
     def do(boy):
@@ -233,7 +244,8 @@ class RunDown:
 
     @staticmethod
     def exit(boy, e):
-        pass
+        if q_down(e):
+            boy.q_effect()
 
     @staticmethod
     def do(boy):
@@ -320,10 +332,10 @@ class StateMachine:
                     right_up: RunLeftUp
                    , q_down: Speedup},
             #
-            # Backstep: {w_down: Backstep, time_out: Idle
-            #            },
-            # Speedup: {right_down: RunRight,  right_up: RunLeft, left_down: RunLeft, left_up: RunRight, up_down: RunUp, up_up: RunDown, down_down: RunDown, down_up: RunUp,
-            #           time_out: Idle, up_up: Idle, down_up: Idle},
+            Backstep: {w_down: Backstep, time_out: Idle
+                       },
+            Speedup: {right_down: RunRight,  right_up: RunLeft, left_down: RunLeft, left_up: RunRight, up_down: RunUp, up_up: RunDown, down_down: RunDown, down_up: RunUp,
+                      time_out: Idle, up_up: Idle, down_up: Idle},
 
 
 
@@ -372,6 +384,8 @@ class Boy:
         self.state_machine = StateMachine(self)
         self.state_machine.start()
 
+        self.speed_up_effect = 'SpeedUpEffect'
+
 
         # self.ball_count = 10
 
@@ -379,6 +393,12 @@ class Boy:
         self.state_machine.update()
         self.x = clamp(50.0, self.x, server.background.w - 50.0)
         self.y = clamp(50.0, self.y, server.background.h - 50.0)
+
+
+    def q_effect(self):
+        if self.speed_up_effect == 'SpeedUpEffect':
+            speed_up_effect = SpeedUpEffect(self.x, self.y)
+            game_world.add_object(speed_up_effect)
 
     def handle_event(self, event):
         self.state_machine.handle_event(('INPUT', event))
