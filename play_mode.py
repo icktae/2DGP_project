@@ -33,7 +33,8 @@ def init():
 
     server.boy = Boy()
     game_world.add_object(server.boy, 1)
-    game_world.add_collision_pair('boy:ball', server.boy, None)
+    game_world.add_collision_pair('boy:enemy', server.boy, None)
+
 
     # server.speed_up_effect = SpeedUpEffect()
     # game_world.add_object(server.speed_up_effect, 1)
@@ -41,10 +42,12 @@ def init():
     server.skill_icon = Skill()
     game_world.add_object(server.skill_icon, 1)
 
-    for _ in range(20):
+    for _ in range(11):
         enemy = Enemy()
         game_world.add_object(enemy)
+        # game_world.add_collision_pair('enemy:ball', enemy, None)
         game_world.add_collision_pair('boy:enemy', None, enemy)
+
 
 
 

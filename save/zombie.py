@@ -24,60 +24,63 @@ FRAMES_PER_ACTION = 10.0
 animation_names = ['Walk', 'Idle']
 
 
-class Enemy:
+class Zombie:
     images = None
 
     def load_images(self):
-        if Enemy.images == None:
-            Enemy.images = {}
+        if Zombie.images == None:
+            Zombie.images = {}
             for name in animation_names:
-                Enemy.images[name] = [load_image("./enemy/" + name + " (%d)" % i + ".png") for i in range(1, 11)]
-    def __init__(self, x = None, y = None):
-        self.x = x if x else random.randint(1200, 1900)
-        self.y = y if y else random.randint(200, 1050)
-        self.size = clamp(1, random.random() * 2, 1.3)
+                Zombie.images[name] = [load_image("./zombie/" + name + " (%d)" % i + ".png") for i in range(1, 11)]
+            Zombie.font = load_font('ENCR10B.TTF', 30)
+
+
+    def __init__(self):
+        self.x = random.randint(100, server.background.w - 100)
+        self.y = random.randint(100, server.background.h - 100)
+        self.size = clamp(0.7, random.random() * 2, 1.3)
         self.load_images()
-        self.dir = 0.0  # radian 값으로 방향을 표시
+        self.dir = 0.0      # radian 값으로 방향을 표시
         self.speed = 0.0
         self.frame = random.randint(0, 9)
         self.state = 'Idle'
 
         self.tx, self.ty = 0, 0
         self.build_behavior_tree()
-        self.loc_no = 0
-
 
     def get_bb(self):
-        return self.x - 50, self.y - 50, self.x + 50, self.y + 50
+        return self.x - 50*self.size, self.y - 50*self.size, self.x + 50*self.size, self.y + 50*self.size
+
 
     def update(self):
         self.frame = (self.frame + FRAMES_PER_ACTION * ACTION_PER_TIME * game_framework.frame_time) % FRAMES_PER_ACTION
         self.bt.run()
 
+
     def draw(self):
         sx, sy = self.x - server.background.window_left, self.y - server.background.window_bottom
         if math.cos(self.dir) < 0:
-            Enemy.images[self.state][int(self.frame)].composite_draw(0, 'h', sx, sy, 100 * self.size, 100 * self.size)
+            Zombie.images[self.state][int(self.frame)].composite_draw(0, 'h', sx, sy, 100*self.size, 100*self.size)
         else:
-            Enemy.images[self.state][int(self.frame)].draw(sx, sy, 100 * self.size, 100 * self.size)
+            Zombie.images[self.state][int(self.frame)].draw(sx, sy, 100*self.size, 100*self.size)
 
-        x1, y1, x2, y2 = self.get_bb()
-        draw_rectangle(x1 - server.background.window_left, y1 - server.background.window_bottom,
-                       x2 - server.background.window_left, y2 - server.background.window_bottom)
+        x1,y1,x2,y2 = self.get_bb()
+        draw_rectangle(x1-server.background.window_left,y1-server.background.window_bottom,
+                       x2-server.background.window_left,y2-server.background.window_bottom)
 
 
     def handle_event(self, event):
         pass
 
     def handle_collision(self, group, other):
-        if group == 'enemy:boy':
-            game_world.remove_object(self)
+        pass
 
     def set_target_location(self, x=None, y=None):
         if not x or not y:
             raise ValueError('Location should be given')
         self.tx, self.ty = x, y
         return BehaviorTree.SUCCESS
+
 
     def distance_less_than(self, x1, y1, x2, y2, r):
         distance2 = (x1 - x2) ** 2 + (y1 - y2) ** 2
@@ -99,36 +102,14 @@ class Enemy:
 
     def set_random_location(self):
         # select random location around boy
-        self.tx = random.randint(int(server.boy.x) - 00, int(server.boy.x) + 00)
-        self.ty = random.randint(int(server.boy.y) - 00, int(server.boy.y) + 00)
+        self.tx = random.randint(int(server.boy.x) - 600, int(server.boy.x) + 600)
+        self.ty = random.randint(int(server.boy.y) - 400, int(server.boy.y) + 400)
         return BehaviorTree.SUCCESS
 
-    def is_boy_nearby(self, distance):
-        if self.distance_less_than(server.boy.x, server.boy.y, self.x, self.y, distance):
-            return BehaviorTree.SUCCESS
-        else:
-            return BehaviorTree.FAIL
 
-    def move_to_boy(self, r=0.5):
-        self.state = 'Walk'
-        self.move_slightly_to(server.boy.x, server.boy.y)
-        if self.distance_less_than(server.boy.x, server.boy.y, self.x, self.y, r):
-            return BehaviorTree.SUCCESS
-        else:
-            return BehaviorTree.RUNNING
 
     def build_behavior_tree(self):
         a1 = Action('Set random location', self.set_random_location)
         a2 = Action('Move to', self.move_to)
-        root = SEQ_move_to_target_location = Sequence('move to 1', a1, a2)
-
-        a3 = Action('Set random location', self.set_random_location)
-        root = SEQ_wander = Sequence('Wander', a3, a2)
-
-        c1 = Condition('소년이 근처에 있는가?', self.is_boy_nearby, 7)
-        a4 = Action('접근', self.move_to_boy)
-        root = SEQ_chase_boy = Sequence('소년을 추적', c1, a4)
-
-        root = SEL_chase_or_flee = Selector('추적 또는 배회', SEQ_chase_boy, SEQ_wander)
-
+        root = SEQ_wander = Sequence('Wander', a1, a2)
         self.bt = BehaviorTree(root)

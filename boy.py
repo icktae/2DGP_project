@@ -401,7 +401,7 @@ class StateMachine:
 
 class Boy:
     def __init__(self):
-        self.x, self.y = 600, 620 #1800
+        self.x, self.y = 600, 620
         self.frame = 0
         self.action = 3
         self.face_dir = 1
@@ -449,12 +449,14 @@ class Boy:
         self.image.clip_draw(int(self.frame) * 100, self.action * 100, 100, 100, sx, sy)
 
 
+        x1,y1,x2,y2 = self.get_bb()
+        draw_rectangle(x1-server.background.window_left,y1-server.background.window_bottom,
+                       x2-server.background.window_left,y2-server.background.window_bottom)
+
     def get_bb(self):
         return self.x - 20, self.y - 40, self.x + 20, self.y + 30
 
     def handle_collision(self, group, other):
-        if group == 'boy:ball':
-            self.ball_count += 1
 
         if group == 'boy:enemy':
             game_framework.quit()
