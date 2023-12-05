@@ -2,15 +2,13 @@ from pico2d import *
 import game_framework
 
 import game_world
-import play_mode2
 import title_mode
 
 from boy import Boy
 from enemy import Enemy
 from speed_up_effect import SpeedUpEffect
 from skill_icon import Skill
-from stage1_image import Stage1
-
+from stage4_image import Stage4
 from touchdown import Touchdown
 from gameover import Gameover
 
@@ -27,12 +25,10 @@ def handle_events():
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.change_mode(title_mode)
-        elif (event.type, event.key) == (SDL_KEYDOWN, SDLK_SPACE):
-            game_framework.change_mode(play_mode2)
+
 
         else:
             server.boy.handle_event(event)
-
 
 
 def init():
@@ -46,21 +42,16 @@ def init():
     game_world.add_collision_pair('boy:enemy', server.boy, None)
 
 
-    # server.speed_up_effect = SpeedUpEffect()
-    # game_world.add_object(server.speed_up_effect, 1)
-
-    server.stage1_image = Stage1()
-    game_world.add_object(server.stage1_image, 1)
+    server.stage4_image = Stage4()
+    game_world.add_object(server.stage4_image, 1)
 
     server.skill_icon = Skill()
     game_world.add_object(server.skill_icon, 1)
 
-    for _ in range(4):
+    for _ in range(11):
         enemy = Enemy()
         game_world.add_object(enemy)
         game_world.add_collision_pair('boy:enemy', None, enemy)
-
-
 
 
 

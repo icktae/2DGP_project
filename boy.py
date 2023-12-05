@@ -3,6 +3,8 @@ import math
 from pico2d import *
 from sdl2 import SDLK_UP, SDLK_DOWN, SDLK_q, SDLK_w
 
+import play_mode
+import play_mode2
 from speed_up_effect import SpeedUpEffect
 from back_step_effect import Back_stepEffect
 
@@ -479,5 +481,7 @@ class Boy:
             game_world.add_object(server.gameover, 1)
             Gameover.game_over_sound.play()
             game_world.remove_object(self)
+            if other in game_world.all_objects():  # 객체가 게임 월드에 존재하는지 확인
+                game_world.remove_object(other)
 
 

@@ -4,6 +4,10 @@ import random
 import math
 import game_framework
 import game_world
+import play_mode2
+import play_mode3
+import play_mode4
+import title_mode
 from behavior_tree import BehaviorTree, Action, Sequence, Condition, Selector
 import play_mode
 
@@ -76,14 +80,24 @@ class Enemy:
                        x2 - server.background.window_left, y2 - server.background.window_bottom)
 
 
+
+    # def ene_rem(self):
+    #     if game_framework.change_mode(title_mode):
+    #         game_world.remove_object(self)
+    #     elif game_framework.change_mode(play_mode2):
+    #         game_world.remove_object(self)
+    #     elif game_framework.change_mode(play_mode3):
+    #         game_world.remove_object(self)
+    #     elif game_framework.change_mode(play_mode4):
+    #         game_world.remove_object(self)
+
+
     def handle_event(self, event):
         pass
 
     def handle_collision(self, group, other):
         if group == 'enemy:boy':
-            server.gameover = Gameover()  # Create Skill instance
-            game_world.add_object(server.gameover, 1)
-            Gameover.game_over_sound.play()
+            pass
 
     def set_target_location(self, x=None, y=None):
         if not x or not y:

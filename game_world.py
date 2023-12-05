@@ -24,6 +24,9 @@ def render():
             o.draw()
 
 
+
+
+
 def remove_collision_object(o):
     for pairs in collision_pairs.values():
         if o in pairs[0]:
@@ -37,7 +40,7 @@ def remove_object(o):
         if o in layer:
             layer.remove(o)
             remove_collision_object(o)
-            del o
+            # del o
             return
     raise ValueError('Cannot delete non existing object')
 
