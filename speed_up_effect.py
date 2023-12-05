@@ -7,8 +7,8 @@ class SpeedUpEffect:
     image = None
     def __init__(self, x = 175, y = 130, velocity = 1):
         if SpeedUpEffect.image == None:
-            SpeedUpEffect.image = load_image('image/cut1.png')
-        self.x, self.y, self.velocity = 175, 130, velocity
+            SpeedUpEffect.image = load_image('image/cut1_1.png')
+        self.x, self.y, self.velocity = 640, 350, velocity
         self.timer = get_time() + 0.5
 
 
