@@ -438,7 +438,7 @@ class Boy:
         self.speed = 0
         self.slow_speed = 0
 
-        self.backstep_count = 1
+        self.backstep_count = 2
         self.speedup_count = 2
 
         self.speed_up_effect = 'SpeedUpEffect'
@@ -511,7 +511,7 @@ class Boy:
 
     def handle_collision(self, group, other, ):
         if group == 'boy:enemy':
-                self.speed -= 100
+                self.speed -= 150
                 RUN_SPEED_PPS = self.speed
                 if self.speed <= 0:
                     self.speed = 0
