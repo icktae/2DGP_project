@@ -116,7 +116,8 @@ class RunRight:
     def enter(boy, e):
         print("run right")
         boy.action = 1
-        boy.speed = RUN_SPEED_PPS
+        if boy.speed == 0:
+            boy.speed = RUN_SPEED_PPS
         boy.dir = 0
 
     @staticmethod
@@ -137,7 +138,8 @@ class RunRightUp:
     def enter(boy, e):
         print("run right up")
         boy.action = 1
-        boy.speed = RUN_SPEED_PPS
+        if boy.speed == 0:
+            boy.speed = RUN_SPEED_PPS
         boy.dir = math.pi / 4.0
 
     @staticmethod
@@ -158,7 +160,8 @@ class RunRightDown:
     def enter(boy, e):
         print("run right down")
         boy.action = 1
-        boy.speed = RUN_SPEED_PPS
+        if boy.speed == 0:
+            boy.speed = RUN_SPEED_PPS
         boy.dir = -math.pi / 4.0
 
     @staticmethod
@@ -179,7 +182,8 @@ class RunLeft:
     def enter(boy, e):
         print("run left")
         boy.action = 0
-        boy.speed = RUN_SPEED_PPS
+        if boy.speed == 0:
+            boy.speed = RUN_SPEED_PPS
         boy.dir = math.pi
 
     @staticmethod
@@ -200,7 +204,8 @@ class RunLeftUp:
     def enter(boy, e):
         print("run left up")
         boy.action = 0
-        boy.speed = RUN_SPEED_PPS
+        if boy.speed == 0:
+            boy.speed = RUN_SPEED_PPS
         boy.dir = math.pi * 3.0 / 4.0
 
     @staticmethod
@@ -221,7 +226,8 @@ class RunLeftDown:
     def enter(boy, e):
         print("run left down")
         boy.action = 0
-        boy.speed = RUN_SPEED_PPS
+        if boy.speed == 0:
+            boy.speed = RUN_SPEED_PPS
         boy.dir = - math.pi * 3.0 / 4.0
 
     @staticmethod
@@ -245,7 +251,8 @@ class RunUp:
             boy.action = 0
         elif boy.action == 3:
             boy.action = 1
-        boy.speed = RUN_SPEED_PPS
+        if boy.speed == 0:
+            boy.speed = RUN_SPEED_PPS
         boy.dir = math.pi / 2.0
 
     @staticmethod
@@ -269,7 +276,8 @@ class RunDown:
             boy.action = 0
         elif boy.action == 3:
             boy.action = 1
-        boy.speed = RUN_SPEED_PPS
+        if boy.speed == 0:
+            boy.speed = RUN_SPEED_PPS
         boy.dir = - math.pi / 2.0
         pass
 
@@ -284,19 +292,21 @@ class RunDown:
     @staticmethod
     def do(boy):
         pass
-def draw_touch_down_text():
-    pass
-
 
 
 
 class Speedup:
     @staticmethod
     def enter(boy, e):
+        if boy.speedup_count <= 0:
+            return
+
         print("speed up")
         boy.speedup_time = get_time() + 0.3
         boy.original_speed = boy.speed  # 원래 속도 저장
         boy.speed = boy.speed * 2.5
+
+        boy.speedup_count -= 1
 
     @staticmethod
     def exit(boy, e):
@@ -317,12 +327,19 @@ class Speedup:
 class Backstep:
     @staticmethod
     def enter(boy, e):
+        if boy.backstep_count <= 0:  # 백스텝 가능 횟수가 0이라면
+            return
+
+
         print('backstep')
         boy.action = 1
+
         boy.speed = RUN_SPEED_PPS * 4
         boy.dir = math.pi
         boy.initial_x = boy.x
         boy.backstep_time = get_time() + 0.06
+
+        boy.backstep_count -= 1
 
     @staticmethod
     def exit(boy, e):
@@ -419,6 +436,10 @@ class Boy:
         self.state_machine = StateMachine(self)
         self.state_machine.start()
         self.speed = 0
+        self.slow_speed = 0
+
+        self.backstep_count = 2
+        self.speedup_count = 2
 
         self.speed_up_effect = 'SpeedUpEffect'
         self.back_step_effect = "Back_stepEffect"
@@ -435,26 +456,27 @@ class Boy:
 
 
     def q_effect(self):
-        if self.speed_up_effect == 'SpeedUpEffect':
-            speed_up_effect = SpeedUpEffect(self.x, self.y)
-            game_world.add_object(speed_up_effect)
-            self.bgm = load_wav('sound/slash2.wav')
-            self.bgm.set_volume(80)
-            self.bgm.play(1)
+        if self.speedup_count >= 1:
+            if self.speed_up_effect == 'SpeedUpEffect':
+                speed_up_effect = SpeedUpEffect(self.x, self.y)
+                game_world.add_object(speed_up_effect)
+                self.bgm = load_wav('sound/slash2.wav')
+                self.bgm.set_volume(80)
+                self.bgm.play(1)
 
 
     def w_effect(self):
-        if self.back_step_effect == 'Back_stepEffect':
-            back_step_effect = Back_stepEffect(self.x, self.y)
-            game_world.add_object(back_step_effect)
-
-            self.bgm = load_wav('sound/slash.ogg')
-            self.bgm.set_volume(80)
-            self.bgm.play(1)
-
-        if self.back_step_effect2 == 'Back_stepEffect2':
-            back_step_effect2 = Back_stepEffect2(self.x - server.background.window_left, self.y - server.background.window_bottom - 25)
-            game_world.add_object(back_step_effect2)
+        if self.backstep_count >= 1:
+            if self.back_step_effect == 'Back_stepEffect':
+                back_step_effect = Back_stepEffect(self.x, self.y)
+                game_world.add_object(back_step_effect)
+                self.bgm = load_wav('sound/slash.ogg')
+                self.bgm.set_volume(80)
+                self.bgm.play(1)
+        if self.backstep_count >= 1:
+            if self.back_step_effect2 == 'Back_stepEffect2':
+                back_step_effect2 = Back_stepEffect2(self.x - server.background.window_left, self.y - server.background.window_bottom - 25)
+                game_world.add_object(back_step_effect2)
 
     # def game_over_sound(self):
     #     if server.boy.y > 1098 or server.boy.y < 170 :
@@ -481,18 +503,16 @@ class Boy:
         #                 x2-server.background.window_left,y2-server.background.window_bottom)
 
 
-    # def slow_down(self):
-    #     self.speed = RUN_SPEED_PPS
-    #     self.speed -= 200
-    #     if self.speed <= 0 :
-    #         self.speed = 0
+    def slow_down(self):
+        self.slow_speed = RUN_SPEED_PPS
 
     def get_bb(self):
         return self.x - 20, self.y - 40, self.x + 20, self.y + 30
 
-    def handle_collision(self, group, other):
+    def handle_collision(self, group, other, ):
         if group == 'boy:enemy':
                 self.speed -= 150
+                RUN_SPEED_PPS = self.speed
                 if self.speed <= 0:
                     self.speed = 0
                     gameover = Gameover()
