@@ -26,7 +26,8 @@ def handle_events():
         if event.type == SDL_QUIT:
             game_framework.quit()
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            game_framework.change_mode(title_mode)
+            game_framework.quit()
+            # game_framework.change_mode(title_mode)
         elif (event.type, event.key) == (SDL_KEYDOWN, SDLK_SPACE):
             game_framework.change_mode(play_mode2)
 
@@ -65,6 +66,8 @@ def init():
 
 
 
+
+
 def finish():
     game_world.clear()
 
@@ -74,6 +77,7 @@ def finish():
 def update():
     game_world.update()
     game_world.handle_collisions()
+
 
     # Check if boy's x value exceeds 2250
     if server.boy.x > 2250:
@@ -89,6 +93,8 @@ def update():
         server.gameover = Gameover()  # Create Skill instance
         game_world.add_object(server.gameover, 1)
         Gameover.game_over_sound.play()
+
+
 
 
 

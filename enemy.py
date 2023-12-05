@@ -75,9 +75,9 @@ class Enemy:
         else:
             Enemy.images[self.state][int(self.frame)].draw(sx, sy, 100 * self.size, 100 * self.size)
 
-        x1, y1, x2, y2 = self.get_bb()
-        draw_rectangle(x1 - server.background.window_left, y1 - server.background.window_bottom,
-                       x2 - server.background.window_left, y2 - server.background.window_bottom)
+        # x1, y1, x2, y2 = self.get_bb()
+        # draw_rectangle(x1 - server.background.window_left, y1 - server.background.window_bottom,
+        #                x2 - server.background.window_left, y2 - server.background.window_bottom)
 
 
 
@@ -97,6 +97,8 @@ class Enemy:
 
     def handle_collision(self, group, other):
         if group == 'enemy:boy':
+
+            game_world.remove_object(self)
             pass
 
     def set_target_location(self, x=None, y=None):

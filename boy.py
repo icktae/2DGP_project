@@ -7,6 +7,7 @@ import play_mode
 import play_mode2
 from speed_up_effect import SpeedUpEffect
 from back_step_effect import Back_stepEffect
+from back_step_effect2 import Back_stepEffect2
 
 from gameover import Gameover
 
@@ -417,9 +418,11 @@ class Boy:
         # self.font = load_font('ENCR10B.TTF', 128)
         self.state_machine = StateMachine(self)
         self.state_machine.start()
+        self.speed = 0
 
         self.speed_up_effect = 'SpeedUpEffect'
         self.back_step_effect = "Back_stepEffect"
+        self.back_step_effect2 = "Back_stepEffect2"
 
         self.previous_state = None
 
@@ -439,13 +442,19 @@ class Boy:
             self.bgm.set_volume(80)
             self.bgm.play(1)
 
+
     def w_effect(self):
         if self.back_step_effect == 'Back_stepEffect':
             back_step_effect = Back_stepEffect(self.x, self.y)
             game_world.add_object(back_step_effect)
+
             self.bgm = load_wav('sound/slash.ogg')
             self.bgm.set_volume(80)
             self.bgm.play(1)
+
+        if self.back_step_effect2 == 'Back_stepEffect2':
+            back_step_effect2 = Back_stepEffect2(self.x - server.background.window_left, self.y - server.background.window_bottom - 25)
+            game_world.add_object(back_step_effect2)
 
     # def game_over_sound(self):
     #     if server.boy.y > 1098 or server.boy.y < 170 :
@@ -466,22 +475,31 @@ class Boy:
 
         self.image.clip_draw(int(self.frame) * 100, self.action * 100, 100, 100, sx, sy)
 
+        #
+        # x1,y1,x2,y2 = self.get_bb()
+        #  draw_rectangle(x1-server.background.window_left,y1-server.background.window_bottom,
+        #                 x2-server.background.window_left,y2-server.background.window_bottom)
 
-        x1,y1,x2,y2 = self.get_bb()
-        draw_rectangle(x1-server.background.window_left,y1-server.background.window_bottom,
-                       x2-server.background.window_left,y2-server.background.window_bottom)
+
+    # def slow_down(self):
+    #     self.speed = RUN_SPEED_PPS
+    #     self.speed -= 200
+    #     if self.speed <= 0 :
+    #         self.speed = 0
 
     def get_bb(self):
         return self.x - 20, self.y - 40, self.x + 20, self.y + 30
 
     def handle_collision(self, group, other):
-
         if group == 'boy:enemy':
-            server.gameover = Gameover()  # Create Gameover instance
-            game_world.add_object(server.gameover, 1)
-            Gameover.game_over_sound.play()
-            game_world.remove_object(self)
-            if other in game_world.all_objects():  # 객체가 게임 월드에 존재하는지 확인
-                game_world.remove_object(other)
+                self.speed -= 150
+                if self.speed <= 0:
+                    self.speed = 0
+                    gameover = Gameover()
+                    game_world.add_object(gameover, 1)
+                    Gameover.game_over_sound.play()
+                if other in game_world.all_objects():  # 충돌한 객체가 게임 월드에 존재하는지 확인
+                    game_world.remove_object(other)
+
 
 
